@@ -105,11 +105,14 @@ Every function should accept two args - state and action and return state."
 API should be plist created with `redux-apply-middleware'."
   (lambda (next)
     (lambda (action)
-      (message "before %s" (funcall (plist-get api :get-state)))
-      (message "Will Dispatch %s" action)
-      (let ((value (funcall next action)))
-        (message "after %s" (funcall (plist-get api :get-state)))
-        value))))
+      (let ((prev-state (funcall (plist-get api :get-state))))
+        (let ((value (funcall next action)))
+          (print `((STATE_BEFORE  ,prev-state)
+                   =>
+                   (ACTION ,action)
+                   =>
+                   (STATE_AFTER ,(funcall (plist-get api :get-state)) )))
+          value)))))
 
 (provide 'redux)
 

@@ -1,7 +1,3 @@
-#+TITLE:README
-#+AUTHOR: Karim Aziiev
-#+EMAIL: karim.aziiev@gmail.com
-
 * redux.el
 
 Simple Redux Implementation in elisp.
@@ -52,7 +48,7 @@ Create store with ~reducer~ and ~enhancer.~
 
 ** Usage example
 
-#+begin_src emacs-lisp :results output
+#+begin_src emacs-lisp :results output :results table
 
 (require 'redux)
 
@@ -71,30 +67,26 @@ Create store with ~reducer~ and ~enhancer.~
                      (redux-apply-middleware
                       'redux-logger)))
 
-(print (funcall (plist-get example-store :get-state)))
-
 (defun example-dispatch (&rest action)
   "Dispatch ACTION."
   (funcall (plist-get example-store :dispatch) action))
 
 (example-dispatch :set 5)
-(print (funcall (plist-get example-store :get-state)))
 (example-dispatch :inc)
-(print (funcall (plist-get example-store :get-state)))
 (example-dispatch :inc)
-(funcall (plist-get example-store :get-state))
-(print (funcall (plist-get example-store :get-state)))
-
-(print (funcall (plist-get example-store :get-state)))
+(example-dispatch :inc)
 
 #+end_src
+*Output*
 
-#+RESULTS:
+#+begin_example
+: ((STATE_BEFORE (:counter 0)) => (ACTION (:set 5)) => (STATE_AFTER (:counter 5)))
 : 
-: (:counter 5)
+: ((STATE_BEFORE (:counter 5)) => (ACTION (:inc)) => (STATE_AFTER (:counter 6)))
 : 
-: (:counter 6)
+: ((STATE_BEFORE (:counter 6)) => (ACTION (:inc)) => (STATE_AFTER (:counter 7)))
 : 
-: (:counter 7)
-: 
-: (:counter 7)
+: ((STATE_BEFORE (:counter 7)) => (ACTION (:inc)) => (STATE_AFTER (:counter 8)))
+#+end_example
+
+
