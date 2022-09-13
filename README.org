@@ -1,0 +1,100 @@
+#+TITLE:README
+#+AUTHOR: Karim Aziiev
+#+EMAIL: karim.aziiev@gmail.com
+
+* redux.el
+
+Simple Redux Implementation in elisp.
+
+** Requirements
+
++ Emacs >= 25.1
+
+** Installation
+
+*** Manually
+
+Download repository and it to your load path in your init file:
+
+#+begin_src elisp :eval no
+
+(add-to-list 'load-path "/path/to/redux.el)
+
+(require 'redux.el)
+
+#+end_src
+
+*** With use-package and straight
+
+#+begin_src elisp :eval no
+
+(use-package redux.el
+	:straight (redux.el
+			       :repo "KarimAziev/redux.el"
+			       :type git
+			       :host github))
+
+#+end_src
+
+** Functions
+
+*** ~redux-logger~  (api)
+Simple middleware. ~api~ should be plist created with ~redux-apply-middleware.~
+*** ~redux-apply-middleware~  (&rest middlewares)
+Create a store enhancer that apply ~middlewares~ to the dispatch method.
+*** ~redux-combine-reducers~  (reducers)
+Return a functions that invokes every reducer in ~reducers.~ ~reducers~ must be plist of key and function. Every function should accept two args - state and action and return state.
+*** ~redux-compose~  (&rest funcs)
+Return right-to-left composition from ~funcs.~
+*** ~redux-create-store~  (reducer &optional enhancer)
+Create store with ~reducer~ and ~enhancer.~
+
+
+** Usage example
+
+#+begin_src emacs-lisp :results output
+
+(require 'redux)
+
+(defun example-counter-reducer (state action)
+  "Increment, decrement or set STATE depending of ACTION."
+  (pcase (car action)
+    (:inc (1+ (or state 0)))
+    (:dec (1- (or state 0)))
+    (:set (plist-get action :set))
+    (_ (or state 0))))
+
+(setq example-store (redux-create-store
+                     (redux-combine-reducers
+                      (list
+                       :counter 'example-counter-reducer))
+                     (redux-apply-middleware
+                      'redux-logger)))
+
+(print (funcall (plist-get example-store :get-state)))
+
+(defun example-dispatch (&rest action)
+  "Dispatch ACTION."
+  (funcall (plist-get example-store :dispatch) action))
+
+(example-dispatch :set 5)
+(print (funcall (plist-get example-store :get-state)))
+(example-dispatch :inc)
+(print (funcall (plist-get example-store :get-state)))
+(example-dispatch :inc)
+(funcall (plist-get example-store :get-state))
+(print (funcall (plist-get example-store :get-state)))
+
+(print (funcall (plist-get example-store :get-state)))
+
+#+end_src
+
+#+RESULTS:
+: 
+: (:counter 5)
+: 
+: (:counter 6)
+: 
+: (:counter 7)
+: 
+: (:counter 7)
