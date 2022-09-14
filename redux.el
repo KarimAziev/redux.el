@@ -100,6 +100,52 @@ Every function should accept two args - state and action and return state."
                                 (plist-get store :dispatch))))
         (setq store (plist-put store :dispatch dispatch))))))
 
+(defmacro redux-configure (sym reducer &optional middlewares)
+  "Create redux store with REDUCER and MIDDLEWARES and set it to SYM.
+Also define such functions prefixed with SYM:
+- dispatch
+- subscribe
+- get-state
+- select."
+  `(progn
+     (defvar ,sym nil)
+     (setq ,sym (redux-create-store
+                 (let ((reducer ,reducer))
+                   (cond ((functionp reducer)
+                          reducer)
+                         (t (redux-combine-reducers reducer))))
+                 (when ,middlewares
+                   (redux-apply-middleware
+                    ,middlewares))))
+     (defun ,(intern (concat (symbol-name sym) "-dispatch"))
+         (&rest action)
+       ,(format "Dispatch ACTION to %s." (symbol-name sym))
+       (funcall (plist-get ,sym :dispatch) action))
+     (defun ,(intern (concat (symbol-name sym) "-get-state"))
+         (&rest action)
+       ,(format "Return current state from store %s." (symbol-name sym))
+       (funcall (plist-get ,sym :get-state)))
+     (defun ,(intern (concat (symbol-name sym) "-subscribe"))
+         (listener)
+       ,(format "Subscribe LISTENER to updates in store %s." (symbol-name
+                                                              sym))
+       (funcall (plist-get ,sym :subscribe) listener))
+     (defun ,(intern (concat (symbol-name sym) "-select"))
+         (&rest path)
+       ,(format "Return the value at a given PATH from store %s." (symbol-name
+                                                                   sym))
+       (let ((state (funcall ',(intern (concat (symbol-name sym)
+                                               "-get-state"))))
+             (plist)
+             (value))
+         (setq plist state)
+         (while (and plist path (setq plist (plist-get plist (pop path))))
+           (setq value plist))
+         (if path
+             nil
+           value)))
+     ,sym))
+
 (defun redux-logger (api)
   "Simple middleware.
 API should be plist created with `redux-apply-middleware'."
