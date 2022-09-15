@@ -122,7 +122,7 @@ Also define such functions prefixed with SYM:
        ,(format "Dispatch ACTION to %s." (symbol-name sym))
        (funcall (plist-get ,sym :dispatch) action))
      (defun ,(intern (concat (symbol-name sym) "-get-state"))
-         (&rest action)
+         ()
        ,(format "Return current state from store %s." (symbol-name sym))
        (funcall (plist-get ,sym :get-state)))
      (defun ,(intern (concat (symbol-name sym) "-subscribe"))
