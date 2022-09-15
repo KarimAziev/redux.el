@@ -87,7 +87,7 @@ Every function should accept two args - state and action and return state."
                                                      (nth idx reducers))
                                           (plist-get next-state
                                                      (nth idx reducers))))))))
-      (if changed next-state state))))
+      (if (or changed (eq (car action) :init)) next-state state))))
 
 (defun redux-apply-middleware (&rest middlewares)
   "Create a store enhancer that apply MIDDLEWARES to the dispatch method."
@@ -144,6 +144,7 @@ Also define such functions prefixed with SYM:
          (if path
              nil
            value)))
+     (,(intern (concat (symbol-name sym) "-dispatch")) :init)
      ,sym))
 
 (defun redux-logger (api)
